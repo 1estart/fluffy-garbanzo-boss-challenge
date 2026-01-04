@@ -1,8 +1,69 @@
-# fluffy-garbanzo-boss-challenge
+## ✅ Работа с Signet
 
+### 📁 Где хранятся данные Signet?
 
-where signet lives Library/Application\ Support/Bitcoin
+На macOS данные Bitcoin Core (включая Signet) хранятся в:
 
+```
+~/Library/Application Support/Bitcoin/signet/
+```
 
-all addresses with balances 
+- Кошельки: `~/Library/Application\ Support/Bitcoin/signet/wallets/`
+- Блокчейн и peers: в той же папке
+
+---
+
+### ▶️ Запуск и синхронизация Signet-ноды
+
+```bash
+# Запустить Signet в фоне
+bitcoind -signet -daemon
+
+# Дождаться синхронизации (проверить статус)
+bitcoin-cli -signet getblockchaininfo | grep -E "blocks|initialblockdownload"
+
+# Остановить ноду
+bitcoin-cli -signet stop
+```
+
+> 💡 Signet синхронизируется за **1–5 минут**, так как сеть очень лёгкая.
+
+---
+
+### 💧 Рабочий faucet (на 2025)
+
+Используй один из надёжных faucet’ов:
+
+- **[https://signet257.bublina.eu.org/](https://signet257.bublina.eu.org/)** ← рекомендуется
+- https://signetfaucet.com (требует CAPTCHA) у меня, скорее всего, не сработал
+
+Просто вставь туда свой **`tb1q...`** адрес и пройди капчу (если требуется).
+
+---
+
+### 🧾 Просмотр всех адресов и балансов
+
+Даже если баланс `0`, адрес будет отображён:
+
+```bash
 bitcoin-cli -signet listreceivedbyaddress 0 true
+```
+
+Пример вывода:
+```json
+[
+  {
+    "address": "tb1qabc123...xyz",
+    "amount": 0.01000000,
+    "confirmations": 1,
+    "label": "test"
+  },
+  {
+    "address": "tb1qxyz987...abc",
+    "amount": 0.00000000,
+    "confirmations": 0,
+    "label": ""
+  }
+]
+```
+
