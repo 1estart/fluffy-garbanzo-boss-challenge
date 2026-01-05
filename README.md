@@ -67,3 +67,17 @@ bitcoin-cli -signet listreceivedbyaddress 0 true
 ]
 ```
 
+## 🧪 Создание raw-транзакции на Signet
+
+```bash
+# 1. Получите UTXO
+bitcoin-cli -signet listunspent
+
+# 2. Создайте транзакцию
+RAW=$(bitcoin-cli -signet createrawtransaction '[{"txid":"...","vout":0}]' '{"адрес_получателя":0.0005}')
+
+# 3. Подпишите
+SIGNED=$(bitcoin-cli -signet signrawtransactionwithwallet "$RAW" | jq -r '.hex')
+
+# 4. Отправьте
+bitcoin-cli -signet sendrawtransaction "$SIGNED"
