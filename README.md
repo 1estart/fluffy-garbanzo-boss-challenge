@@ -67,17 +67,53 @@ bitcoin-cli -signet listreceivedbyaddress 0 true
 ]
 ```
 
-## 🧪 Создание raw-транзакции на Signet
+Отлично! Вот аккуратная, готовая к использованию версия скрипта для `README.md` — с пояснениями, безопасной структурой и командой запуска:
+
+```markdown
+## 🧪 Готовый скрипт для отправки raw-транзакции
+
+Создай файл `/tmp/generate_tx`:
 
 ```bash
-# 1. Получите UTXO
-bitcoin-cli -signet listunspent
+#!/bin/bash
+# Скрипт для создания и отправки raw-транзакции на Signet
+# Замени значения ниже на свои из `bitcoin-cli -signet listunspent`
 
-# 2. Создайте транзакцию
-RAW=$(bitcoin-cli -signet createrawtransaction '[{"txid":"...","vout":0}]' '{"адрес_получателя":0.0005}')
+# Вход: UTXO, которым будем платить
+TXID="7d2d91e91359b17bf954bd5b0fa37ce2fafdca74e2548a7d56961ab3ebf0b"  # ← замени на свой txid
+VOUT=0                                                                     # ← обычно 0
 
-# 3. Подпишите
-SIGNED=$(bitcoin-cli -signet signrawtransactionwithwallet "$RAW" | jq -r '.hex')
+# Выходы: получатель и сдача (обязательно!)
+RECIPIENT="tt96p5m69s69gjfjyqenwu4vmplxuqvcyrg57tt"        # ← адрес получателя (может быть твой)
+CHANGE_ADDRESS="tb6gjr8jlu0zgjmy8w6waw654a0jwf3tuendm0qa"   # ← твой адрес для сдачи
 
-# 4. Отправьте
-bitcoin-cli -signet sendrawtransaction "$SIGNED"
+# Суммы в BTC (минимум ~0.00000546 для избежания dust)
+# Пример: вход = 0.00008 BTC → отправляем 0.000005, сдача = 0.000074, комиссия = 0.000001
+RAW=$(bitcoin-cli -signet createrawtransaction \
+  "[{\"txid\":\"$TXID\",\"vout\":$VOUT}]" \
+  "{\"$RECIPIENT\":0.00000500,\"$CHANGE_ADDRESS\":0.00007400}")
+
+echo "Raw TX: $RAW"
+
+# Подписываем транзакцию кошельком
+SIGNED_HEX=$(bitcoin-cli -signet signrawtransactionwithwallet "$RAW" | jq -r '.hex')
+echo "Signed TX: $SIGNED_HEX"
+
+# Отправляем в сеть
+TXID_SENT=$(bitcoin-cli -signet sendrawtransaction "$SIGNED_HEX")
+echo "Транзакция отправлена: $TXID_SENT"
+echo "Смотреть в mempool: https://mempool.space/signet/tx/$TXID_SENT"
+```
+
+Сделай скрипт исполняемым и запусти:
+
+```bash
+chmod +x /tmp/generate_tx
+/tmp/generate_tx
+```
+
+> ✅ Убедись, что:
+> - `TXID` и `VOUT` взяты из `listunspent`
+> - суммы не ниже **dust threshold** (~546 satoshi)
+> - всегда указана **сдача**, иначе разница уйдёт в комиссию
+``` 
